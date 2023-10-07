@@ -1,48 +1,78 @@
-from myAPI import *
+import tkinter as tk
+from tkinter import StringVar, OptionMenu, Label, Button
+from myAPI import get_random_movie, get_movies_from_file, update_text_file, moviesToID
 
-from tkinter import *
+class MovieApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Movie Genre Selector")
 
-from PIL import *
+        self.options = [
+            "Biography", "Music", "Romance", "Family", "War", "News", "Reality",
+            "Talk Show", "Adventure", "Fantasy", "Animation", "Drama", "Film Noir",
+            "Horror", "Action", "Game Show", "Comedy", "History", "Western",
+            "Musical", "Sport", "Thriller", "Short", "Adult", "Crime",
+            "Science Fiction", "Mystery", "Documentary"
+        ]
 
-from tkinter import ttk
+        # Create a custom style for buttons
+        self.button_style = {
+            'bg': 'green',
+            'fg': 'white',
+            'font': ('Helvetica', 12),
+        }
 
-root = Tk()
+        self.layout = tk.Frame(root)
+        self.layout.pack(padx=10, pady=10)
 
+        self.spinner = OptionMenu(
+            self.layout,
+            StringVar(),
+            *self.options
+        )
+        self.spinner.config(width=20)
+        self.spinner.grid(row=0, column=0, padx=10, pady=10)
 
-options = [
-    "Biography", "Music", "Romance","Family", "War", "News", "Reality",
-    "Talk Show", "Adventure","Fantasy", "Animation", "Drama", "Film Noir",
-    "Horror", "Action","Game Show", "Comedy", "History", "Western",
-    "Musical", "Sport","Thriller", "Short", "Adult", "Crime", "Science Fiction", "Mystery",
-    "Documentary"
-]
+        self.show_button = Button(
+            self.layout,
+            text='SHOW MOVIE!',
+            command=self.show_movie,
+            **self.button_style
+        )
+        self.show_button.grid(row=1, column=0, padx=10, pady=10)
 
-def show():
-    movie = getRandomMovie(getMoviesFromFile(moviesToID[clicked.get()]))
-    myLabel = Label(root, text=movie).pack()
+        self.update_button = Button(
+            self.layout,
+            text='UPDATE GENRE',
+            command=self.update_genre,
+            **self.button_style
+        )
+        self.update_button.grid(row=1, column=1, padx=10, pady=10)
 
-def showUpdate():
-    updateTextFile(moviesToID[clicked.get()])
-    myLabel = Label(root, text="UPDATED!!").pack()
+        self.result_label = Label(
+            self.layout,
+            text='',
+            wraplength=400
+        )
+        self.result_label.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
+    def show_movie(self):
+        selected_genre = self.spinner.cget("text")
+        if selected_genre != 'Choose a Genre':
+            movie = get_random_movie(get_movies_from_file(moviesToID[selected_genre]))
+            self.result_label.config(text=movie)
+        else:
+            self.result_label.config(text='Please select a genre.')
 
-# def show():
-#     myLabel = Label(root, text = "Trial")
-#     myLabel.pack()
+    def update_genre(self):
+        selected_genre = self.spinner.cget("text")
+        if selected_genre != 'Choose a Genre':
+            update_text_file(moviesToID[selected_genre])
+            self.result_label.config(text='UPDATED!!')
+        else:
+            self.result_label.config(text='Please select a genre.')
 
-clicked = StringVar(root)
-clicked.set("Choose a Genre")
-
-drop = OptionMenu(root, clicked, *options)
-drop.pack()
-myButton = Button(root, text = "SHOW MOVIE!", bg = "green", command = show )
-myButton.pack()
-#myButton.config(height = 40, width = 40)
-myButton2 = Button(root, text = "UPDATE GENRE", command = showUpdate )
-myButton2.pack()
-#myButton2.config(height = 40, width = 40)
-
-root.mainloop()
-
-
-
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = MovieApp(root)
+    root.mainloop()
